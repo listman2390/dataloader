@@ -4,10 +4,13 @@ import akka.actor.ActorSystem;
 
 import javax.inject.*;
 
+import model.Stores;
 import play.*;
 import play.db.jpa.JPAApi;
+import play.db.jpa.Transactional;
 import play.mvc.*;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -15,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import scala.concurrent.duration.Duration;
 import scala.concurrent.ExecutionContextExecutor;
+import services.Loader;
 
 /**
  * This controller contains an action that demonstrates how to write
@@ -50,20 +54,21 @@ public class AsyncController extends Controller {
      * will be called when the application receives a <code>GET</code> request with
      * a path of <code>/message</code>.
      */
+    @Transactional(readOnly = true)
     public CompletionStage<Result> message() {
-        return getFutureMessage(10, TimeUnit.SECONDS).thenApplyAsync(Results::ok, exec);
+        return getFutureMessage(1, TimeUnit.SECONDS).thenApplyAsync(Results::ok, exec);
     }
-
+    @Transactional(readOnly = true)
     private CompletionStage<String> getFutureMessage(long time, TimeUnit timeUnit) {
         CompletableFuture<String> future = new CompletableFuture<>();
         actorSystem.scheduler().scheduleOnce(
                 Duration.create(time, timeUnit),
                 () -> {
-                    System.out.println("PASO");
+                    Loader loader = new Loader(this.jpaApi);
+                    loader.excecute();
                     future.complete("Hi!");
                 }, exec
         );
         return future;
     }
-
 }
