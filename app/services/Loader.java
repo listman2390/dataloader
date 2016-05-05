@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class Loader {
+    public int dato =0;
     private JPAApi jpaApi;
     private List<Store> stores;
     private List<User> users;
@@ -200,6 +201,7 @@ public class Loader {
             c.set(2014, 1, 1, 0, 0, 0);
             Random randomTime = new Random();
             for (int i = 1; i <= 100000000; i++) {
+                dato++;
                 User user = this.users.get(new Random().nextInt(this.users.size()));
                 ShoppingCar shoppingCar = new ShoppingCar();
                 shoppingCar.id = 1;

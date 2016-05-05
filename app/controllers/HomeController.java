@@ -1,5 +1,6 @@
 package controllers;
 
+import play.db.jpa.JPAApi;
 import play.db.jpa.Transactional;
 import play.mvc.*;
 
@@ -14,9 +15,11 @@ import javax.inject.Inject;
  */
 public class HomeController extends Controller {
     private final Loader loader;
+    private final JPAApi jpaApi;
     @Inject
-    public HomeController(Loader loader){
+    public HomeController(JPAApi jpaApi,Loader loader){
         this.loader = loader;
+        this.jpaApi = jpaApi;
     }
 
     /**
@@ -27,8 +30,16 @@ public class HomeController extends Controller {
      */
     @Transactional(readOnly = true)
     public Result index() {
-        loader.excecute();
-        return ok("application is ready.");
+        this.jpaApi.withTransaction(() -> {
+            if(loader.dato ==0) {
+                loader.excecute();
+            }
+        });
+
+        return ok("application is ready:"+loader.dato);
     }
 
+    public Result ver() {
+        return ok("application is ready:"+loader.dato);
+    }
 }
